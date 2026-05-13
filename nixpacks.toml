@@ -1,0 +1,4 @@
+# PaddlePaddle loads libpaddle.so, which needs GNU OpenMP at runtime.
+# Without this, import fails with: libgomp.so.1: cannot open shared object file
+[phases.setup]
+aptPkgs = ["...", "libgomp1"]
