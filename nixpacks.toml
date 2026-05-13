@@ -1,4 +1,4 @@
-# PaddlePaddle loads libpaddle.so, which needs GNU OpenMP at runtime.
-# Without this, import fails with: libgomp.so.1: cannot open shared object file
+# Nixpacks only: Railway’s default builder is Railpack (see railpack.json).
+# PaddlePaddle needs libgomp.so.1 from libgomp1 at runtime.
 [phases.setup]
 aptPkgs = ["...", "libgomp1"]
