@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OCR Extractor</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace">
+        <div class="capture-panel">
+          <header>
+            <p class="eyebrow">PaddleOCR</p>
+            <h1>OCR Extractor</h1>
+          </header>
+
+          <div class="actions">
+            <label class="button primary">
+              Upload Image
+              <input id="fileInput" type="file" accept="image/*" hidden />
+            </label>
+            <button id="cameraButton" class="button" type="button">Open Camera</button>
+            <button id="captureButton" class="button" type="button" disabled>Capture</button>
+          </div>
+
+          <video id="video" class="preview hidden" autoplay playsinline></video>
+          <canvas id="canvas" hidden></canvas>
+          <img id="imagePreview" class="preview hidden" alt="Selected image preview" />
+
+          <div id="status" class="status">Choose an image or capture one from the camera.</div>
+        </div>
+
+        <div class="result-panel">
+          <div class="result-header">
+            <h2>Extracted Text</h2>
+            <button id="copyButton" class="icon-button" type="button" title="Copy text" disabled>
+              Copy
+            </button>
+          </div>
+          <pre id="resultText">No text extracted yet.</pre>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
