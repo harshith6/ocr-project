@@ -1,4 +1,4 @@
 # Nixpacks only: Railway’s default builder is Railpack (see railpack.json).
-# PaddlePaddle needs libgomp.so.1 from libgomp1 at runtime.
+# libgomp1: Paddle; libgl1: OpenCV (cv2) via PaddleOCR needs libGL.so.1
 [phases.setup]
-aptPkgs = ["...", "libgomp1"]
+aptPkgs = ["...", "libgomp1", "libgl1"]

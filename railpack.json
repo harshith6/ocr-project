@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.railpack.com",
   "deploy": {
-    "aptPackages": ["...", "libgomp1"]
+    "aptPackages": ["...", "libgomp1", "libgl1"]
   }
 }
