@@ -1,0 +1,20 @@
+# Render Blueprint: Web service from Dockerfile (repo root = this folder).
+# https://render.com/docs/yaml-spec
+#
+# Size / 500 MB note: Installed Paddle + OpenCV + deps usually exceed 500 MB on disk.
+# Use a Render instance with enough disk/RAM, or a different OCR stack for tiny plans.
+#
+# Models: The first successful /api/ocr call downloads PP-OCR weights into
+# PADDLEOCR_MODEL_DIR (one-time per fresh disk). Later calls reuse cached files.
+
+services:
+  - type: web
+    name: ocr-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PADDLEOCR_MODEL_DIR
+        value: /app/.paddleocr
+      - key: PYTHONUNBUFFERED
+        value: "1"

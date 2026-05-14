@@ -10,7 +10,6 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from paddleocr import PaddleOCR
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -28,9 +27,25 @@ app.add_middleware(
 )
 
 
+def _paddleocr_model_dir() -> str:
+    """Where PaddleOCR stores downloaded weights (set PADDLEOCR_MODEL_DIR on small/persistent disks)."""
+    raw = os.environ.get("PADDLEOCR_MODEL_DIR", str(BASE_DIR / ".paddleocr"))
+    path = Path(raw)
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)
+
+
 @lru_cache(maxsize=1)
-def get_ocr_engine() -> PaddleOCR:
-    return PaddleOCR(use_angle_cls=True, lang="en")
+def get_ocr_engine() -> Any:
+    # Lazy import: keeps `/` and static assets working without loading Paddle until first OCR.
+    from paddleocr import PaddleOCR
+
+    return PaddleOCR(
+        use_angle_cls=True,
+        lang="en",
+        show_log=False,
+        model_storage_directory=_paddleocr_model_dir(),
+    )
 
 
 def parse_ocr_result(result: list[Any]) -> tuple[str, list[dict[str, Any]]]:
