@@ -6,6 +6,22 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+
+def _apply_low_memory_env_defaults() -> None:
+    """Cap BLAS/OpenMP threads to reduce RAM spikes on small EC2 instances (OOM killer -> Killed)."""
+    for key in (
+        "OMP_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+    ):
+        if key not in os.environ:
+            os.environ[key] = "1"
+
+
+_apply_low_memory_env_defaults()
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -35,15 +51,28 @@ def _paddleocr_model_dir() -> str:
     return str(path)
 
 
+def _env_flag(name: str, default: bool) -> bool:
+    raw = os.environ.get(name, "").lower()
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off"):
+        return False
+    return default
+
+
 @lru_cache(maxsize=1)
 def get_ocr_engine() -> Any:
     # Lazy import: keeps `/` and static assets working without loading Paddle until first OCR.
     from paddleocr import PaddleOCR
 
+    use_angle_cls = _env_flag("PADDLEOCR_USE_ANGLE_CLS", True)
+    use_mkldnn = _env_flag("PADDLEOCR_USE_MKLDNN", False)
+
     return PaddleOCR(
-        use_angle_cls=True,
+        use_angle_cls=use_angle_cls,
         lang="en",
         show_log=False,
+        use_mkldnn=use_mkldnn,
         model_storage_directory=_paddleocr_model_dir(),
     )
 
@@ -97,7 +126,8 @@ async def extract_text(file: UploadFile = File(...)) -> dict[str, Any]:
             temp_file.write(contents)
             temp_path = temp_file.name
 
-        result = get_ocr_engine().ocr(temp_path, cls=True)
+        use_cls = _env_flag("PADDLEOCR_USE_ANGLE_CLS", True)
+        result = get_ocr_engine().ocr(temp_path, cls=use_cls)
         text, lines = parse_ocr_result(result)
 
         return {
